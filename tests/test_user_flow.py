@@ -103,3 +103,16 @@ async def test_expired_token_access(async_client, admin_user):
         headers={"Authorization": f"Bearer {expired_token}"}
     )
     assert response.status_code in (401, 403)
+
+# Update User Email and Verify Persistence
+@pytest.mark.asyncio
+async def test_update_user_email(async_client, admin_token, user):
+    new_email = "updateduser@example.com"
+    response = await async_client.patch(
+        f"/users/{user.id}",
+        json={"email": new_email},
+        headers={"Authorization": f"Bearer {admin_token}"}
+    )
+    assert response.status_code == 200
+    assert response.json()["email"] == new_email
+
