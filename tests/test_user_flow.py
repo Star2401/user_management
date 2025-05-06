@@ -65,4 +65,21 @@ async def test_login_invalid_email_format(async_client):
     })
     assert response.status_code == 422
 
+# Edge case: Long nickname
+@pytest.mark.asyncio
+async def test_create_user_with_long_nickname(async_client, admin_token):
+    long_nickname = "x" * 256
+    response = await async_client.post(
+        "/users/",
+        json={
+            "nickname": long_nickname,
+            "email": "longnick@example.com",
+            "first_name": "Long",
+            "last_name": "Nickname",
+            "password": "SecurePass$123"
+        },
+        headers={"Authorization": f"Bearer {admin_token}"}
+    )
+    assert response.status_code in (400, 422)
+
 
