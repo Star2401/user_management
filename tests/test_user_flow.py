@@ -82,4 +82,13 @@ async def test_create_user_with_long_nickname(async_client, admin_token):
     )
     assert response.status_code in (400, 422)
 
+# Locked User Login Attempt
+@pytest.mark.asyncio
+async def test_login_locked_user(async_client, locked_user):
+    response = await async_client.post("/auth/login", json={
+        "email": locked_user.email,
+        "password": "MySuperPassword$1234"
+    })
+    assert response.status_code == 403
+
 
