@@ -91,4 +91,15 @@ async def test_login_locked_user(async_client, locked_user):
     })
     assert response.status_code == 403
 
-
+# Token Expiry Simulation
+@pytest.mark.asyncio
+async def test_expired_token_access(async_client, admin_user):
+    expired_token = create_access_token(
+        data={"sub": str(admin_user.id), "role": admin_user.role.name},
+        expires_delta=timedelta(minutes=-1)
+    )
+    response = await async_client.get(
+        "/users/",
+        headers={"Authorization": f"Bearer {expired_token}"}
+    )
+    assert response.status_code in (401, 403)
