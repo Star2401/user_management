@@ -46,4 +46,14 @@ async def test_admin_creates_user(async_client, admin_token):
     assert response.status_code == 201
     assert response.json()["email"] == "newbie@example.com"
 
+# Authenticated User Attempts Role Escalation
+@pytest.mark.asyncio
+async def test_user_attempts_admin_promotion(async_client, user_token, user):
+    response = await async_client.patch(
+        f"/users/{user.id}",
+        json={"role": "ADMIN"},
+        headers={"Authorization": f"Bearer {user_token}"}
+    )
+    assert response.status_code in (403, 401)
+
 
