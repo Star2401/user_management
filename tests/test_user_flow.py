@@ -19,3 +19,12 @@ async def test_user_registration_duplicate_email(db_session, user):
     db_session.add(duplicate_user)
     with pytest.raises(Exception):
         await db_session.commit()
+
+# User Login: Unverified Email
+@pytest.mark.asyncio
+async def test_login_unverified_user(async_client, unverified_user):
+    response = await async_client.post("/auth/login", json={
+        "email": unverified_user.email,
+        "password": "MySuperPassword$1234"
+    })
+    assert response.status_code == 403
