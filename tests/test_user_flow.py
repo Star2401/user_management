@@ -28,3 +28,22 @@ async def test_login_unverified_user(async_client, unverified_user):
         "password": "MySuperPassword$1234"
     })
     assert response.status_code == 403
+
+# Admin creates a new user
+@pytest.mark.asyncio
+async def test_admin_creates_user(async_client, admin_token):
+    response = await async_client.post(
+        "/users/",
+        json={
+            "nickname": "newbie",
+            "email": "newbie@example.com",
+            "first_name": "New",
+            "last_name": "User",
+            "password": "SecurePass$123"
+        },
+        headers={"Authorization": f"Bearer {admin_token}"}
+    )
+    assert response.status_code == 201
+    assert response.json()["email"] == "newbie@example.com"
+
+
