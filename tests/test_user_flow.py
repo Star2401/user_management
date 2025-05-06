@@ -56,4 +56,13 @@ async def test_user_attempts_admin_promotion(async_client, user_token, user):
     )
     assert response.status_code in (403, 401)
 
+# Login with Invalid Email Format
+@pytest.mark.asyncio
+async def test_login_invalid_email_format(async_client):
+    response = await async_client.post("/auth/login", json={
+        "email": "not-an-email",
+        "password": "password"
+    })
+    assert response.status_code == 422
+
 
