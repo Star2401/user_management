@@ -15,6 +15,7 @@ from uuid import UUID
 from app.services.email_service import EmailService
 from app.models.user_model import UserRole
 import logging
+from fastapi import HTTPException
 
 settings = get_settings()
 logger = logging.getLogger(__name__)
@@ -52,11 +53,19 @@ class UserService:
     @classmethod
     async def create(cls, session: AsyncSession, user_data: Dict[str, str], email_service: EmailService) -> Optional[User]:
         try:
+            # Validate schema first, to catch bad formats/missing fields
             validated_data = UserCreate(**user_data).model_dump()
-            existing_user = await cls.get_by_email(session, validated_data['email'])
-            if existing_user:
-                logger.error("User with given email already exists.")
-                return None
+        except ValidationError as e:
+            logger.error(f"Validation error during user creation: {e}")
+            raise HTTPException(status_code=422, detail=e.errors())
+        
+        # Proceed with business logic after validation
+        existing_user = await cls.get_by_email(session, validated_data['email'])
+        if existing_user:
+            logger.error("User with given email already exists.")
+            raise HTTPException(status_code=400, detail="Email already exists.")
+        
+        try:
             validated_data['hashed_password'] = hash_password(validated_data.pop('password'))
             new_user = User(**validated_data)
             new_nickname = generate_nickname()
@@ -77,8 +86,8 @@ class UserService:
             await session.commit()
             return new_user
         except ValidationError as e:
-            logger.error(f"Validation error during user creation: {e}")
-            return None
+            logger.error(f"Unexpected error during user creation: {e}")
+            raise HTTPException(status_code=500, detail="Internal server error")
 
     @classmethod
     async def update(cls, session: AsyncSession, user_id: UUID, update_data: Dict[str, str]) -> Optional[User]:
