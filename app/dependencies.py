@@ -44,9 +44,9 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
         raise credentials_exception
     return {"user_id": user_id, "role": user_role}
 
-def require_role(role: str):
-    def role_checker(current_user: dict = Depends(get_current_user)):
-        if current_user["role"] not in role:
-            raise HTTPException(status_code=403, detail="Operation not permitted")
+def require_role(roles: list):
+    def wrapper(current_user: dict = Depends(get_current_user)):
+        if current_user["role"].upper() not in [role.upper() for role in roles]:
+            raise HTTPException(status_code=403, detail="Unauthorized")
         return current_user
-    return role_checker
+    return wrapper
