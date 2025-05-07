@@ -152,7 +152,7 @@ async def create_user(user: UserCreate, request: Request, db: AsyncSession = Dep
     if not created_user:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to create user")
 
-  # Email verification is handled in the UserService.create if user is not the first admin  
+    # Email verification is handled in the UserService.create if user is not the first admin  
     
     return UserResponse.model_construct(
         id=created_user.id,
